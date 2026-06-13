@@ -3,6 +3,7 @@ package com.portfolio.ordermanagement.service;
 import com.portfolio.ordermanagement.dto.RegisterRequest;
 import com.portfolio.ordermanagement.dto.UserResponse;
 import com.portfolio.ordermanagement.entity.User;
+import com.portfolio.ordermanagement.exception.EmailAlreadyExistsException;
 import com.portfolio.ordermanagement.mapper.UserMapper;
 import com.portfolio.ordermanagement.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +22,7 @@ public class AuthService {
     @Transactional
     public UserResponse register(RegisterRequest request){
         if(userRepository.existsByEmail(request.email())){
-            throw new IllegalArgumentException("Email is already registered");
+            throw new EmailAlreadyExistsException(request.email());
         }
 
         User user = userMapper.toEntity(request);
