@@ -1,5 +1,6 @@
 package com.portfolio.ordermanagement.controller;
 
+import com.portfolio.ordermanagement.dto.LoginRequest;
 import com.portfolio.ordermanagement.dto.RegisterRequest;
 import com.portfolio.ordermanagement.dto.UserResponse;
 import com.portfolio.ordermanagement.service.AuthService;
@@ -19,6 +20,11 @@ public class AuthController {
     @ResponseStatus(HttpStatus.CREATED)
     public UserResponse register(@Valid @RequestBody RegisterRequest request){
         return authService.register(request);
+    }
+
+    @PostMapping("/login")
+    public UserResponse login(@Valid @RequestBody LoginRequest request) {
+        return authService.login(request);
     }
 
 }
