@@ -1,5 +1,6 @@
 package com.portfolio.ordermanagement.controller;
 
+import com.portfolio.ordermanagement.dto.AuthResponse;
 import com.portfolio.ordermanagement.dto.LoginRequest;
 import com.portfolio.ordermanagement.dto.RegisterRequest;
 import com.portfolio.ordermanagement.dto.UserResponse;
@@ -7,6 +8,7 @@ import com.portfolio.ordermanagement.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -23,8 +25,13 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public UserResponse login(@Valid @RequestBody LoginRequest request) {
+    public AuthResponse login(@Valid @RequestBody LoginRequest request) {
         return authService.login(request);
+    }
+
+    @GetMapping("/me")
+    public UserResponse getCurrentUser(Authentication authentication) {
+        return authService.getCurrentUser(authentication.getName());
     }
 
 }

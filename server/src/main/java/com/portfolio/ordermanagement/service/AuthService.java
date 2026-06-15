@@ -1,5 +1,6 @@
 package com.portfolio.ordermanagement.service;
 
+import com.portfolio.ordermanagement.dto.AuthResponse;
 import com.portfolio.ordermanagement.dto.LoginRequest;
 import com.portfolio.ordermanagement.dto.RegisterRequest;
 import com.portfolio.ordermanagement.dto.UserResponse;
@@ -8,6 +9,7 @@ import com.portfolio.ordermanagement.exception.EmailAlreadyExistsException;
 import com.portfolio.ordermanagement.exception.InvalidCredentialsException;
 import com.portfolio.ordermanagement.mapper.UserMapper;
 import com.portfolio.ordermanagement.repository.UserRepository;
+import com.portfolio.ordermanagement.security.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,7 @@ public class AuthService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
     @Transactional
     public UserResponse register(RegisterRequest request){
@@ -38,7 +41,7 @@ public class AuthService {
     }
 
     @Transactional(readOnly = true)
-    public UserResponse login(LoginRequest request){
+    public AuthResponse login(LoginRequest request){
 
         User user = userRepository.findByEmail(request.email())
                 .orElseThrow(InvalidCredentialsException::new);
@@ -51,6 +54,21 @@ public class AuthService {
         if(!passwordMatches){
             throw new InvalidCredentialsException();
         }
+
+        String token = jwtService.generateToken(user);
+
+        return new AuthResponse(
+                token,
+                "Bearer",
+                jwtService.getExpiration(),
+                userMapper.toResponse(user)
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public UserResponse getCurrentUser(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new InvalidCredentialsException());
 
         return userMapper.toResponse(user);
     }
