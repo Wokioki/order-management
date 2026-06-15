@@ -1,5 +1,6 @@
 package com.portfolio.ordermanagement.security;
 
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -35,26 +36,45 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter{
         }
 
         String token = authorizationHeader.substring(7);
-        String email = jwtService.extractEmail(token);
 
-        if (email != null
-                && SecurityContextHolder.getContext().getAuthentication() == null) {
+        try {
+            String email = jwtService.extractEmail(token);
 
-            UserDetails userDetails =
-                    userDetailsService.loadUserByUsername(email);
+            if (email != null
+                    && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-            if (jwtService.isTokenValid(token, userDetails)) {
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(
-                                userDetails,
-                                null,
-                                userDetails.getAuthorities()
-                        );
+                UserDetails userDetails =
+                        userDetailsService.loadUserByUsername(email);
 
-                SecurityContextHolder
-                        .getContext()
-                        .setAuthentication(authentication);
+                if (jwtService.isTokenValid(token, userDetails)) {
+                    UsernamePasswordAuthenticationToken authentication =
+                            new UsernamePasswordAuthenticationToken(
+                                    userDetails,
+                                    null,
+                                    userDetails.getAuthorities()
+                            );
+
+                    SecurityContextHolder
+                            .getContext()
+                            .setAuthentication(authentication);
+                }
             }
+        } catch (JwtException exception) {
+            SecurityContextHolder.clearContext();
+
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json;charset=UTF-8");
+            response.getWriter().write(
+                    """
+                    {
+                      "status": 401,
+                      "error": "Unauthorized",
+                      "message": "Invalid or expired token"
+                    }
+                    """
+            );
+
+            return;
         }
 
         filterChain.doFilter(request, response);
