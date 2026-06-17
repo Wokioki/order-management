@@ -48,4 +48,21 @@ public class CategoryService {
         return categoryMapper.toResponse(category);
     }
 
+    @Transactional
+    public CategoryResponse updateCategory(Long id, CategoryRequest request) {
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new CategoryNotFoundException(id));
+
+        if (!category.getName().equalsIgnoreCase(request.name())
+                && categoryRepository.existsByNameIgnoreCase(request.name())) {
+            throw new CategoryAlreadyExistsException(request.name());
+        }
+
+        categoryMapper.updateEntity(category, request);
+
+        Category updatedCategory = categoryRepository.save(category);
+
+        return categoryMapper.toResponse(updatedCategory);
+    }
+
 }
