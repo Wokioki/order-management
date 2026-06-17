@@ -51,4 +51,27 @@ public class ProductService {
         return productMapper.toResponse(product);
     }
 
+    @Transactional
+    public ProductResponse updateProduct(Long id, ProductRequest request) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ProductNotFoundException(id));
+
+        Category category = categoryRepository.findById(request.categoryId())
+                .orElseThrow(() -> new CategoryNotFoundException(request.categoryId()));
+
+        productMapper.updateEntity(product, request, category);
+
+        Product updatedProduct = productRepository.save(product);
+
+        return productMapper.toResponse(updatedProduct);
+    }
+
+    @Transactional
+    public void deleteProduct(Long id) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ProductNotFoundException(id));
+
+        productRepository.delete(product);
+    }
+
 }
