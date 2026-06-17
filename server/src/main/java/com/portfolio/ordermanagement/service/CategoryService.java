@@ -4,6 +4,7 @@ import com.portfolio.ordermanagement.dto.CategoryRequest;
 import com.portfolio.ordermanagement.dto.CategoryResponse;
 import com.portfolio.ordermanagement.entity.Category;
 import com.portfolio.ordermanagement.exception.CategoryAlreadyExistsException;
+import com.portfolio.ordermanagement.exception.CategoryNotFoundException;
 import com.portfolio.ordermanagement.mapper.CategoryMapper;
 import com.portfolio.ordermanagement.repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +38,14 @@ public class CategoryService {
                 .stream()
                 .map(categoryMapper::toResponse)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public CategoryResponse getCategoryById(Long id){
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new CategoryNotFoundException(id));
+
+        return categoryMapper.toResponse(category);
     }
 
 }
