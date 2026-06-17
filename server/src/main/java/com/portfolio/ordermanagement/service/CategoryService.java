@@ -65,4 +65,12 @@ public class CategoryService {
         return categoryMapper.toResponse(updatedCategory);
     }
 
+    @Transactional
+    public void deleteCategory(Long id) {
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new CategoryNotFoundException(id));
+
+        categoryRepository.delete(category);
+    }
+
 }
