@@ -9,11 +9,15 @@ import com.portfolio.ordermanagement.exception.ProductNotFoundException;
 import com.portfolio.ordermanagement.mapper.ProductMapper;
 import com.portfolio.ordermanagement.repository.CategoryRepository;
 import com.portfolio.ordermanagement.repository.ProductRepository;
+import com.portfolio.ordermanagement.specification.ProductSpecifications;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import java.math.BigDecimal;
 
 @Service
 @RequiredArgsConstructor
@@ -36,11 +40,21 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    public List<ProductResponse> getAllProducts() {
-        return productRepository.findAll()
-                .stream()
-                .map(productMapper::toResponse)
-                .toList();
+    public Page<ProductResponse> getAllProducts(
+            String search,
+            Long categoryId,
+            BigDecimal minPrice,
+            BigDecimal maxPrice,
+            Pageable pageable
+    ) {
+        Specification<Product> specification = Specification
+                .where(ProductSpecifications.nameContains(search))
+                .and(ProductSpecifications.hasCategory(categoryId))
+                .and(ProductSpecifications.priceGreaterThanOrEqual(minPrice))
+                .and(ProductSpecifications.priceLessThanOrEqual(maxPrice));
+
+        return productRepository.findAll(specification, pageable)
+                .map(productMapper::toResponse);
     }
 
     @Transactional(readOnly = true)
