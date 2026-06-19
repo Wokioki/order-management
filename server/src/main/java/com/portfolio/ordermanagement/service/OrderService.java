@@ -1,0 +1,79 @@
+package com.portfolio.ordermanagement.service;
+
+import com.portfolio.ordermanagement.dto.CreateOrderRequest;
+import com.portfolio.ordermanagement.dto.OrderItemRequest;
+import com.portfolio.ordermanagement.dto.OrderResponse;
+import com.portfolio.ordermanagement.entity.Order;
+import com.portfolio.ordermanagement.entity.OrderItem;
+import com.portfolio.ordermanagement.entity.Product;
+import com.portfolio.ordermanagement.entity.User;
+import com.portfolio.ordermanagement.exception.InsufficientStockException;
+import com.portfolio.ordermanagement.exception.InvalidCredentialsException;
+import com.portfolio.ordermanagement.exception.ProductNotFoundException;
+import com.portfolio.ordermanagement.mapper.OrderMapper;
+import com.portfolio.ordermanagement.repository.OrderRepository;
+import com.portfolio.ordermanagement.repository.ProductRepository;
+import com.portfolio.ordermanagement.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+
+@Service
+@RequiredArgsConstructor
+public class OrderService {
+
+    private final OrderRepository orderRepository;
+    private final ProductRepository productRepository;
+    private final UserRepository userRepository;
+    private final OrderMapper orderMapper;
+
+    @Transactional
+    public OrderResponse createOrder(CreateOrderRequest request, String userEmail) {
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new InvalidCredentialsException());
+
+        Order order = new Order();
+        order.setUser(user);
+
+        BigDecimal totalAmount = BigDecimal.ZERO;
+
+        for (OrderItemRequest itemRequest : request.items()) {
+            Product product = productRepository.findById(itemRequest.productId())
+                    .orElseThrow(() -> new ProductNotFoundException(itemRequest.productId()));
+
+            if (product.getStockQuantity() < itemRequest.quantity()) {
+                throw new InsufficientStockException(
+                        product.getName(),
+                        itemRequest.quantity(),
+                        product.getStockQuantity()
+                );
+            }
+
+            BigDecimal lineTotal = product.getPrice()
+                    .multiply(BigDecimal.valueOf(itemRequest.quantity()));
+
+            OrderItem orderItem = new OrderItem();
+            orderItem.setProduct(product);
+            orderItem.setProductName(product.getName());
+            orderItem.setUnitPrice(product.getPrice());
+            orderItem.setQuantity(itemRequest.quantity());
+            orderItem.setLineTotal(lineTotal);
+
+            order.addItem(orderItem);
+
+            product.setStockQuantity(
+                    product.getStockQuantity() - itemRequest.quantity()
+            );
+
+            totalAmount = totalAmount.add(lineTotal);
+        }
+
+        order.setTotalAmount(totalAmount);
+
+        Order savedOrder = orderRepository.save(order);
+
+        return orderMapper.toResponse(savedOrder);
+    }
+}
