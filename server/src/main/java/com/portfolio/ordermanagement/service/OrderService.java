@@ -9,6 +9,7 @@ import com.portfolio.ordermanagement.entity.Product;
 import com.portfolio.ordermanagement.entity.User;
 import com.portfolio.ordermanagement.exception.InsufficientStockException;
 import com.portfolio.ordermanagement.exception.InvalidCredentialsException;
+import com.portfolio.ordermanagement.exception.OrderNotFoundException;
 import com.portfolio.ordermanagement.exception.ProductNotFoundException;
 import com.portfolio.ordermanagement.mapper.OrderMapper;
 import com.portfolio.ordermanagement.repository.OrderRepository;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -76,4 +78,27 @@ public class OrderService {
 
         return orderMapper.toResponse(savedOrder);
     }
+
+    @Transactional(readOnly = true)
+    public List<OrderResponse> getMyOrders(String userEmail){
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new InvalidCredentialsException());
+
+        return orderRepository.findByUserOrderByCreatedAtDesc(user)
+                .stream()
+                .map(orderMapper::toResponse)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public OrderResponse getMyOrderById(Long id, String userEmail){
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new InvalidCredentialsException());
+
+        Order order = orderRepository.findByIdAndUser(id,user)
+                .orElseThrow(() -> new OrderNotFoundException(id));
+
+        return orderMapper.toResponse(order);
+    }
+
 }
