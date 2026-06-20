@@ -1,4 +1,4 @@
-package com.portfolio.ordermanagement.controller;
+package com.portfolio.ordermanagement.integration;
 
 
 import com.portfolio.ordermanagement.dto.CategoryRequest;
