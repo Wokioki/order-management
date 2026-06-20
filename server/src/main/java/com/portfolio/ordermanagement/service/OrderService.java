@@ -3,10 +3,8 @@ package com.portfolio.ordermanagement.service;
 import com.portfolio.ordermanagement.dto.CreateOrderRequest;
 import com.portfolio.ordermanagement.dto.OrderItemRequest;
 import com.portfolio.ordermanagement.dto.OrderResponse;
-import com.portfolio.ordermanagement.entity.Order;
-import com.portfolio.ordermanagement.entity.OrderItem;
-import com.portfolio.ordermanagement.entity.Product;
-import com.portfolio.ordermanagement.entity.User;
+import com.portfolio.ordermanagement.dto.UpdateOrderStatusRequest;
+import com.portfolio.ordermanagement.entity.*;
 import com.portfolio.ordermanagement.exception.InsufficientStockException;
 import com.portfolio.ordermanagement.exception.InvalidCredentialsException;
 import com.portfolio.ordermanagement.exception.OrderNotFoundException;
@@ -109,4 +107,25 @@ public class OrderService {
                 .map(orderMapper::toResponse);
     }
 
+    @Transactional
+    public OrderResponse updateOrderStatus(Long id, UpdateOrderStatusRequest request) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new OrderNotFoundException(id));
+
+        if (request.status() == OrderStatus.CANCELLED
+                && order.getStatus() != OrderStatus.CANCELLED) {
+
+            for (OrderItem item : order.getItems()) {
+                Product product = item.getProduct();
+
+                product.setStockQuantity(
+                        product.getStockQuantity() + item.getQuantity()
+                );
+            }
+        }
+
+        order.setStatus(request.status());
+
+        return orderMapper.toResponse(order);
+    }
 }

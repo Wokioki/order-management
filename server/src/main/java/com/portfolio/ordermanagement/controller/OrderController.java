@@ -2,6 +2,7 @@ package com.portfolio.ordermanagement.controller;
 
 import com.portfolio.ordermanagement.dto.CreateOrderRequest;
 import com.portfolio.ordermanagement.dto.OrderResponse;
+import com.portfolio.ordermanagement.dto.UpdateOrderStatusRequest;
 import com.portfolio.ordermanagement.service.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -58,5 +59,14 @@ public class OrderController {
             Pageable pageable
     ) {
         return orderService.getAllOrders(pageable);
+    }
+
+    @PatchMapping("/{id}/status")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+    public OrderResponse updateOrderStatus(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateOrderStatusRequest request
+    ) {
+        return  orderService.updateOrderStatus(id,request);
     }
 }
