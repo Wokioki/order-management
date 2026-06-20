@@ -16,6 +16,8 @@ import com.portfolio.ordermanagement.repository.OrderRepository;
 import com.portfolio.ordermanagement.repository.ProductRepository;
 import com.portfolio.ordermanagement.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -99,6 +101,12 @@ public class OrderService {
                 .orElseThrow(() -> new OrderNotFoundException(id));
 
         return orderMapper.toResponse(order);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<OrderResponse> getAllOrders(Pageable pageable) {
+        return orderRepository.findAll(pageable)
+                .map(orderMapper::toResponse);
     }
 
 }
