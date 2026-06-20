@@ -7,6 +7,7 @@ import com.portfolio.ordermanagement.service.CategoryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,6 +21,7 @@ public class CategoryController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public CategoryResponse createCategory(
             @Valid @RequestBody CategoryRequest request
     ){
@@ -37,6 +39,7 @@ public class CategoryController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public CategoryResponse updateCategory(
             @PathVariable Long id,
             @Valid @RequestBody CategoryRequest request
@@ -46,6 +49,7 @@ public class CategoryController {
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public void deleteCategory(@PathVariable Long id) {
         categoryService.deleteCategory(id);
     }
