@@ -20,3 +20,12 @@ export type PageResponse<T> = {
     first: boolean;
     last: boolean;
 };
+
+export type ProductRequest = {
+    name: string;
+    description: string;
+    price: number;
+    stockQuantity: number;
+    imageUrl: string;
+    categoryId: number;
+};

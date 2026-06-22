@@ -1,5 +1,9 @@
 import { apiRequest } from "./http";
-import type { PageResponse, ProductResponse } from "../types/product";
+import type {
+    PageResponse,
+    ProductRequest,
+    ProductResponse,
+} from "../types/product";
 
 export type ProductQueryParams = {
     search?: string;
@@ -28,4 +32,29 @@ export function getProducts(
 
 export function getProductById(id: number): Promise<ProductResponse> {
     return apiRequest<ProductResponse>(`/products/${id}`);
+}
+
+export function createProduct(
+    request: ProductRequest
+): Promise<ProductResponse> {
+    return apiRequest<ProductResponse>("/products", {
+        method: "POST",
+        body: request,
+    });
+}
+
+export function updateProduct(
+    id: number,
+    request: ProductRequest
+): Promise<ProductResponse> {
+    return apiRequest<ProductResponse>(`/products/${id}`, {
+        method: "PUT",
+        body: request,
+    });
+}
+
+export function deleteProduct(id: number): Promise<void> {
+    return apiRequest<void>(`/products/${id}`, {
+        method: "DELETE",
+    });
 }

@@ -7,6 +7,8 @@ import RegisterPage from "./pages/RegisterPage";
 import ProductDetailsPage from "./pages/ProductDetailsPage";
 import MyOrdersPage from "./pages/MyOrdersPage";
 import AdminOrdersPage from "./pages/AdminOrdersPage";
+import AdminProductsPage from "./pages/AdminProductsPage";
+import AdminCategoriesPage from "./pages/AdminCategoriesPage";
 
 function AppLayout({ children }: { children: React.ReactNode }) {
     return (
@@ -64,6 +66,24 @@ export default function App() {
                 element={
                     <AppLayout>
                         <AdminOrdersPage />
+                    </AppLayout>
+                }
+            />
+
+            <Route
+                path="/admin/products"
+                element={
+                    <AppLayout>
+                        <AdminProductsPage />
+                    </AppLayout>
+                }
+            />
+
+            <Route
+                path="/admin/categories"
+                element={
+                    <AppLayout>
+                        <AdminCategoriesPage />
                     </AppLayout>
                 }
             />

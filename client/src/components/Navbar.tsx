@@ -22,7 +22,11 @@ export default function Navbar() {
                 {isAuthenticated && <Link to="/my-orders">My Orders</Link>}
 
                 {(user?.role === "ADMIN" || user?.role === "MANAGER") && (
-                    <Link to="/admin/orders">Admin Orders</Link>
+                    <>
+                        <Link to="/admin/products">Admin Products</Link>
+                        <Link to="/admin/categories">Admin Categories</Link>
+                        <Link to="/admin/orders">Admin Orders</Link>
+                    </>
                 )}
             </nav>
 
