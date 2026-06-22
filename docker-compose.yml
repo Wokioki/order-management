@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgres:16
+    image: postgres:16-alpine
     container_name: order-management-postgres
     environment:
       POSTGRES_DB: order_management
@@ -9,7 +9,32 @@ services:
     ports:
       - "5434:5432"
     volumes:
-      - order_management_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
+
+  api:
+    build:
+      context: ./server
+    container_name: order-management-api
+    depends_on:
+      - postgres
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/order_management
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      JWT_SECRET: my-super-secret-key-for-order-management-app-2026
+      SEED_ADMIN_EMAIL: admin@example.com
+      SEED_ADMIN_PASSWORD: admin123
+    ports:
+      - "8081:8081"
+
+  web:
+    build:
+      context: ./client
+    container_name: order-management-web
+    depends_on:
+      - api
+    ports:
+      - "3000:80"
 
 volumes:
-  order_management_data:
+  postgres_data:

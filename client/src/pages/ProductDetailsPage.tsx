@@ -1,11 +1,14 @@
-import { useEffect, useState, type FormEvent } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { createOrder } from "../api/orderApi";
 import { getProductById } from "../api/productApi";
+import { useAuth } from "../context/AuthContext";
 import type { ProductResponse } from "../types/product";
 
 export default function ProductDetailsPage() {
     const { id } = useParams();
+    const navigate = useNavigate();
+    const { isAuthenticated } = useAuth();
 
     const [product, setProduct] = useState<ProductResponse | null>(null);
     const [quantity, setQuantity] = useState(1);
@@ -15,26 +18,35 @@ export default function ProductDetailsPage() {
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
     useEffect(() => {
-        if (!id) {
-            setError("Product id is missing");
-            setIsLoading(false);
-            return;
+        async function loadProduct() {
+            if (!id) {
+                setError("Product id is missing");
+                setIsLoading(false);
+                return;
+            }
+
+            try {
+                const productResponse = await getProductById(Number(id));
+                setProduct(productResponse);
+            } catch (error) {
+                setError(error instanceof Error ? error.message : "Failed to load product");
+            } finally {
+                setIsLoading(false);
+            }
         }
 
-        getProductById(Number(id))
-            .then(setProduct)
-            .catch((error) => {
-                setError(error instanceof Error ? error.message : "Failed to load product");
-            })
-            .finally(() => {
-                setIsLoading(false);
-            });
+        loadProduct();
     }, [id]);
 
-    async function handleCreateOrder(event: FormEvent<HTMLFormElement>) {
+    async function handleCreateOrder(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
 
         if (!product) {
+            return;
+        }
+
+        if (!isAuthenticated) {
+            navigate("/login");
             return;
         }
 
@@ -111,6 +123,7 @@ export default function ProductDetailsPage() {
                                 <label className="form-label" htmlFor="quantity">
                                     Quantity
                                 </label>
+
                                 <input
                                     id="quantity"
                                     className="form-input"
@@ -126,7 +139,9 @@ export default function ProductDetailsPage() {
                                             return;
                                         }
 
-                                        setQuantity(Math.min(Math.max(nextQuantity, 1), product.stockQuantity));
+                                        setQuantity(
+                                            Math.min(Math.max(nextQuantity, 1), product.stockQuantity)
+                                        );
                                     }}
                                     disabled={product.stockQuantity === 0}
                                 />
