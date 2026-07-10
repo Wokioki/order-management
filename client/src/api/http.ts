@@ -1,4 +1,6 @@
-const API_BASE_URL = "/api";
+const API_BASE_URL = (
+    import.meta.env.VITE_API_BASE_URL || "http://localhost:8081"
+).replace(/\/+$/, "");
 
 type RequestOptions = {
     method?: string;
@@ -20,11 +22,18 @@ export async function apiRequest<T>(
         headers.Authorization = `Bearer ${token}`;
     }
 
-    const response = await fetch(`${API_BASE_URL}${path}`, {
-        method: options.method ?? "GET",
-        headers,
-        body: options.body ? JSON.stringify(options.body) : undefined,
-    });
+    const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+
+    const response = await fetch(
+        `${API_BASE_URL}/api${normalizedPath}`,
+        {
+            method: options.method ?? "GET",
+            headers,
+            body: options.body
+                ? JSON.stringify(options.body)
+                : undefined,
+        }
+    );
 
     if (!response.ok) {
         let message = "Request failed";
@@ -42,5 +51,5 @@ export async function apiRequest<T>(
         return undefined as T;
     }
 
-    return response.json();
+    return response.json() as Promise<T>;
 }
