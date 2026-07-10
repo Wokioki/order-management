@@ -10,20 +10,28 @@ services:
       - "5434:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d order_management"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   api:
     build:
       context: ./server
     container_name: order-management-api
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     environment:
       DB_URL: jdbc:postgresql://postgres:5432/order_management
       DB_USERNAME: postgres
       DB_PASSWORD: postgres
       JWT_SECRET: my-super-secret-key-for-order-management-app-2026
+      JWT_EXPIRATION: 86400000
       SEED_ADMIN_EMAIL: admin@example.com
       SEED_ADMIN_PASSWORD: admin123
+      CORS_ALLOWED_ORIGINS: http://localhost:3000,http://localhost:5173
     ports:
       - "8081:8081"
 
