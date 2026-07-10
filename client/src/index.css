@@ -1031,3 +1031,119 @@ select {
     padding: 36px 0;
   }
 }
+
+.demo-accounts {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.demo-accounts__heading {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.demo-accounts__title {
+  color: #0f172a;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.demo-accounts__hint {
+  color: #64748b;
+  font-size: 12px;
+}
+
+.demo-accounts__list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.demo-account {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+
+  padding: 12px;
+  border: 1px solid #dbe4f0;
+  border-radius: 10px;
+
+  color: inherit;
+  background: #f8fafc;
+  text-align: left;
+  cursor: pointer;
+
+  transition:
+          border-color 150ms ease,
+          background-color 150ms ease,
+          transform 150ms ease;
+}
+
+.demo-account:hover {
+  border-color: #93b4f5;
+  background: #eff6ff;
+  transform: translateY(-1px);
+}
+
+.demo-account:focus-visible {
+  outline: 3px solid rgba(37, 99, 235, 0.2);
+  outline-offset: 2px;
+}
+
+.demo-account__content {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.demo-account__role {
+  color: #0f172a;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.demo-account__description {
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.demo-account__credentials {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  margin-top: 5px;
+
+  color: #475569;
+  font-family: monospace;
+  font-size: 12px;
+}
+
+.demo-account__action {
+  flex-shrink: 0;
+
+  padding: 6px 10px;
+  border-radius: 7px;
+
+  color: #1d4ed8;
+  background: #dbeafe;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+@media (max-width: 480px) {
+  .demo-account {
+    align-items: flex-start;
+  }
+
+  .demo-account__credentials {
+    flex-direction: column;
+    gap: 2px;
+  }
+}
