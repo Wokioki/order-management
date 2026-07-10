@@ -15,6 +15,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.math.BigDecimal;
+import java.util.Locale;
 
 @Configuration
 @RequiredArgsConstructor
@@ -31,10 +32,17 @@ public class DataSeeder {
     @Value("${seed.admin.password:admin123}")
     private String adminPassword;
 
+    @Value("${seed.customer.email:customer@example.com}")
+    private String customerEmail;
+
+    @Value("${seed.customer.password:customer123}")
+    private String customerPassword;
+
     @Bean
     CommandLineRunner seedDatabase() {
         return args -> {
             createAdminUser();
+            createCustomerUser();
 
             Category electronics = createCategoryIfMissing(
                     "Electronics",
@@ -99,16 +107,14 @@ public class DataSeeder {
     }
 
     private void createAdminUser() {
-        boolean adminExists = userRepository.findAll()
-                .stream()
-                .anyMatch(user -> user.getEmail().equalsIgnoreCase(adminEmail));
+        String normalizedEmail = normalizeEmail(adminEmail);
 
-        if (adminExists) {
+        if (userRepository.findByEmail(normalizedEmail).isPresent()) {
             return;
         }
 
         User admin = new User();
-        admin.setEmail(adminEmail);
+        admin.setEmail(normalizedEmail);
         admin.setPassword(passwordEncoder.encode(adminPassword));
         admin.setFirstName("Admin");
         admin.setLastName("User");
@@ -117,15 +123,38 @@ public class DataSeeder {
         userRepository.save(admin);
     }
 
-    private Category createCategoryIfMissing(String name, String description) {
+    private void createCustomerUser() {
+        String normalizedEmail = normalizeEmail(customerEmail);
+
+        if (userRepository.findByEmail(normalizedEmail).isPresent()) {
+            return;
+        }
+
+        User customer = new User();
+        customer.setEmail(normalizedEmail);
+        customer.setPassword(passwordEncoder.encode(customerPassword));
+        customer.setFirstName("Demo");
+        customer.setLastName("Customer");
+        customer.setRole(Role.CUSTOMER);
+
+        userRepository.save(customer);
+    }
+
+    private Category createCategoryIfMissing(
+            String name,
+            String description
+    ) {
         return categoryRepository.findAll()
                 .stream()
-                .filter(category -> category.getName().equalsIgnoreCase(name))
+                .filter(category ->
+                        category.getName().equalsIgnoreCase(name)
+                )
                 .findFirst()
                 .orElseGet(() -> {
                     Category category = new Category();
                     category.setName(name);
                     category.setDescription(description);
+
                     return categoryRepository.save(category);
                 });
     }
@@ -140,7 +169,9 @@ public class DataSeeder {
     ) {
         boolean productExists = productRepository.findAll()
                 .stream()
-                .anyMatch(product -> product.getName().equalsIgnoreCase(name));
+                .anyMatch(product ->
+                        product.getName().equalsIgnoreCase(name)
+                );
 
         if (productExists) {
             return;
@@ -155,5 +186,9 @@ public class DataSeeder {
         product.setCategory(category);
 
         productRepository.save(product);
+    }
+
+    private String normalizeEmail(String email) {
+        return email.trim().toLowerCase(Locale.ROOT);
     }
 }
